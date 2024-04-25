@@ -112,7 +112,7 @@ def knn(train_graphs, test_graph, train_labels, k):
 
 
 
-directory = 'D:/sem6/GT/preprocessed data'
+directory = 'C:/sem 6/text files/preprocessed data'
 topics = ["fashion", "amazonsports", "disease"]
 num_train_docs = 12
 num_test_docs = 3
@@ -139,7 +139,8 @@ for topic, merged_graph in merged_graphs.items():
 k = 7 # Number of neighbors to consider
 
 # Test file path (Replace with the path to your test file)
-test_file_path = 'D:/sem6/GT/preprocessed data/disease13.txt'
+test_file_path = 'C:/sem 6/text files/preprocessed data/disease13.txt'
+
 
 # Construct test graph from the test file
 test_graph = construct_graph_from_txt_file(test_file_path)
