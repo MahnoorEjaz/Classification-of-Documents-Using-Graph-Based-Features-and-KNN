@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Apr 20 18:20:36 2024
-
-@author: ELITEBOOK
-"""
-
-
 import os
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -120,7 +112,7 @@ def knn(train_graphs, test_graph, train_labels, k):
 
 
 
-directory = 'C:/sem 6/text files/preprocessed data'
+directory = 'D:/sem6/GT/preprocessed data'
 topics = ["fashion", "amazonsports", "disease"]
 num_train_docs = 12
 num_test_docs = 3
@@ -147,7 +139,7 @@ for topic, merged_graph in merged_graphs.items():
 k = 7 # Number of neighbors to consider
 
 # Test file path (Replace with the path to your test file)
-test_file_path = 'C:/sem 6/text files/preprocessed data/disease13.txt'
+test_file_path = 'D:/sem6/GT/preprocessed data/disease13.txt'
 
 # Construct test graph from the test file
 test_graph = construct_graph_from_txt_file(test_file_path)
@@ -215,3 +207,72 @@ else:
     plt.ylabel("True Label")
     plt.title("Confusion Matrix")
     plt.show()
+all_true_labels = []
+all_predicted_labels = []
+
+# Loop through each topic
+for topic in topics:
+    # Initialize lists to store true and predicted labels for the current topic
+    true_labels = []
+    predicted_labels = []
+
+    # Loop through each test file of the current topic
+    for i in range(num_train_docs + 1, num_train_docs + num_test_docs + 1):
+        # Test file path
+        test_file_path = os.path.join(directory, f"{topic}{i}.txt")
+
+        # Construct test graph from the test file
+        test_graph = construct_graph_from_txt_file(test_file_path)
+
+        # Call the function to compute MCS between test graph and each merged common subgraph
+        mcs_scores = compute_mcs_with_test(test_graph, merged_graphs)
+
+        # Predict the label for the test file
+        predicted_label = knn(list(merged_graphs.values()), test_graph, list(merged_graphs.keys()), k)
+
+        # Append true label
+        true_labels.append(topic)
+
+        # Append predicted label
+        predicted_labels.append(predicted_label)
+
+    # Append true and predicted labels for the current topic to the overall lists
+    all_true_labels.extend(true_labels)
+    all_predicted_labels.extend(predicted_labels)
+
+    # Compute metrics for the current topic
+    accuracy = accuracy_score(true_labels, predicted_labels)*100
+    precision = precision_score(true_labels, predicted_labels, average='micro', labels=np.unique(predicted_labels)) *100
+    recall = recall_score(true_labels, predicted_labels, average='micro', labels=np.unique(predicted_labels))*100
+    f1 = f1_score(true_labels, predicted_labels, average='micro', labels=np.unique(predicted_labels))*100
+
+    print(f"Metrics for topic {topic}:")
+    print("Accuracy:", accuracy, '%')
+    print("Precision:", precision, '%')
+    print("Recall:", recall, '%')
+    print("F1-score:", f1, '%')
+    plt.show()
+
+# Compute metrics for all topics combined
+combined_accuracy = accuracy_score(all_true_labels, all_predicted_labels)
+combined_precision = precision_score(all_true_labels, all_predicted_labels, average='micro', labels=np.unique(all_predicted_labels))
+combined_recall = recall_score(all_true_labels, all_predicted_labels, average='micro', labels=np.unique(all_predicted_labels))
+combined_f1 = f1_score(all_true_labels, all_predicted_labels, average='micro', labels=np.unique(all_predicted_labels))
+
+combined_accuracy_percentage = combined_accuracy * 100
+combined_precision_percentage = combined_precision * 100
+combined_recall_percentage = combined_recall * 100
+combined_f1_percentage = combined_f1 * 100
+
+print("Combined Accuracy:", combined_accuracy_percentage,'%')
+print("Combined Precision:", combined_precision_percentage,'%')
+print("Combined Recall:", combined_recall_percentage, '%')
+print("Combined F1-score:", combined_f1_percentage, '%')
+# Plot confusion matrix for all topics combined
+conf_matrix = confusion_matrix(all_true_labels, all_predicted_labels)
+plt.figure(figsize=(6, 4))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=topics, yticklabels=topics)
+plt.xlabel("Predicted Label")
+plt.ylabel("True Label")
+plt.title("Combined Confusion Matrix for all Topics")
+plt.show()
